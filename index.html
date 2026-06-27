@@ -263,4 +263,37 @@
         showSection('home');
     </script>
 </body>
+   <script>
+    const levels = [
+        { question: "2 + 2 kitna hota hai?", answer: "4" },
+        { question: "India ki capital kya hai?", answer: "Delhi" },
+        { question: "Rangin dhanush mein kitne rang hote hain?", answer: "7" }
+    ];
+
+    let currentLevel = 0;
+
+    function startGame() {
+        currentLevel = 0;
+        alert("Game Shuru! Sawal: " + levels[currentLevel].question);
+    }
+
+    function nextLevel() {
+        if (currentLevel < levels.length - 1) {
+            currentLevel++;
+            alert("Level " + (currentLevel + 1) + ": " + levels[currentLevel].question);
+        } else {
+            alert("Badhai ho! Saare levels poore ho gaye.");
+        }
+    }
+
+    function checkAnswer() {
+        const userAnswer = document.getElementById("answer-input").value;
+        if (userAnswer.trim().toLowerCase() === levels[currentLevel].answer.toLowerCase()) {
+            alert("Sahi jawab!");
+            nextLevel();
+        } else {
+            alert("Galat jawab, phir se try karein!");
+        }
+    }
+</script> 
 </html>
