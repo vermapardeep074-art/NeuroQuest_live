@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeuroQuest Premium</title>
+    <style>
+        :root { --accent: #6c5ce7; --bg: #f8f9fa; }
+        body { margin: 0; background: var(--bg); font-family: 'Poppins', sans-serif; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        #game-container { width: 100%; max-width: 450px; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; border-radius: 20px; }
+        .header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .level-badge { background: var(--accent); color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; }
+        .canvas { height: 50vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .btn-premium { width: 80%; padding: 15px; border: none; border-radius: 12px; background: var(--accent); color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        
+        /* Game Over Screen */
+        #game-over { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); color: white; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; z-index: 10; }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- Game Over UI -->
+        <div id="game-over">
+            <h1>GAME OVER! 💀</h1>
+            <p>Aapka samay khatam ho gaya.</p>
+            <button class="btn-premium" onclick="location.reload()">TRY AGAIN</button>
+        </div>
+
+        <div class="header">
+            <div class="level-badge" id="lvl-txt">Level 1</div>
+            <div class="stats">⏱️ <span id="timer">30</span>s | 🏆 <span id="score">0</span></div>
+        </div>
+        <div class="canvas" id="canvas">
+            <h3 id="q-txt">Solve this: 5 + 5 = ?</h3>
+        </div>
+        <div style="text-align: center;">
+            <button class="btn-premium" onclick="nextLevel()">NEXT LEVEL</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0; let time = 30;
+        const LEVELS = Array.from({length: 100}, (_, i) => ({ id: i + 1, q: `Puzzle #${i + 1}: Find the Logic!` }));
+        let current = 0;
+
+        let gameTimer = setInterval(() => {
+            if(time > 0) {
+                time--; document.getElementById('timer').innerText = time;
+            } else {
+                document.getElementById('game-over').style.display = 'flex';
+                clearInterval(gameTimer);
+            }
+        }, 1000);
+
+        function nextLevel() {
+            if(current < LEVELS.length - 1) {
+                current++; score += 10; time = 30;
+                document.getElementById('lvl-txt').innerText = `Level ${LEVELS[current].id}`;
+                document.getElementById('q-txt').innerText = LEVELS[current].q;
+                document.getElementById('score').innerText = score;
+                navigator.vibrate(100);
+            }
+        }
+    </script>
+</body>
+</html>
