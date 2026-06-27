@@ -266,10 +266,8 @@
 const LEVEL_LIBRARY = {
     1: { title: "Basic Logic", animation: "animate-bounce", diff: "Easy" },
     2: { title: "Color Match", animation: "animate-pulse", diff: "Easy" },
-    3: { title: "Speed Reaction", animation: "animate-spin", diff: "Medium" },
-    // Aise hi aap 1000 tak entry kar sakte hain
+    3: { title: "Speed Reaction", animation: "animate-spin", diff: "Medium" }
 };
-
 function renderLevel(lvlId) {
     // Agar level database mein nahi hai, toh automatic hard level generate karein
     const data = LEVEL_LIBRARY[lvlId] || { title: "Challenge #" + lvlId, animation: "animate-bounce", diff: "Hard" };
