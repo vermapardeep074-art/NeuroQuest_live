@@ -1,85 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroQuest: Pro Edition</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Outfit', sans-serif; background: #0a0f1d; overflow: hidden; }
-        .glass-panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroQuest 3D - Ultimate Brain Puzzle Adventure</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+  .container {
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+</style>
 </head>
 <body>
+<div #a6e3a1">"color:#cba6f7">class="container">
+  <h1>NeuroQuest 3D - Ultimate Brain Puzzle Adventure</h1>
+  <button id="start-button">Start Game</button>
+  <button id="next-level-button">Next Level</button>
+  <button id="check-answer-button">Check Answer</button>
+  <input #a6e3a1">"color:#cba6f7">type="text" id="answer-input" placeholder="Enter your answer">
+  <div id="game-state"></div>
+</div>
 
-    <div id="ui-layer" class="absolute inset-0 z-50 pointer-events-none flex items-center justify-center">
-        <!-- Start Screen -->
-        <div id="start-screen" class="glass-panel p-8 rounded-3xl text-center pointer-events-auto">
-            <h1 class="text-5xl font-extrabold text-white mb-2">NeuroQuest</h1>
-            <p class="text-indigo-300 mb-8" id="level-display">Level 1: Focus Test</p>
-            <button onclick="startGame()" class="bg-indigo-600 text-white font-bold py-3 px-10 rounded-full transition hover:scale-105">START MISSION</button>
-        </div>
+<script>
+  // Core game logic
+  #a6e3a1">"color:#cba6f7">class Game {
+      constructor() {
+          this.levels = [];
+          this.currentLevel = 0;
+          this.playerScore = 0;
+          this.isGameOver = #a6e3a1">"color:#cba6f7">false;
+      }
 
-        <!-- HUD (Heads-Up Display) -->
-        <div id="hud" class="hidden absolute top-0 w-full p-6 flex justify-between items-start pointer-events-none">
-            <div class="glass-panel px-6 py-3 rounded-2xl text-white pointer-events-auto">
-                <div class="text-xs uppercase text-indigo-400 font-bold">Level <span id="current-lvl">1</span></div>
-                <div class="text-2xl font-bold"><span id="found-count">0</span> / <span id="target-count">4</span></div>
-            </div>
-            <div class="glass-panel px-6 py-3 rounded-2xl text-white pointer-events-auto">
-                <div class="text-xs uppercase text-indigo-400 font-bold">Timer</div>
-                <div id="timer" class="text-2xl font-bold">30s</div>
-            </div>
-        </div>
-    </div>
+      loadLevels(levels) {
+          this.levels = levels;
+      }
 
-    <script>
-        let level = 1;
-        let score = 0;
-        let timeLeft = 30;
-        let audioCtx;
-        
-        // Professional Audio Engine - Generates ambient sounds
-        function playBackgroundMusic() {
-            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = 'sine'; osc.frequency.value = 220;
-            gain.gain.value = 0.05;
-            osc.start();
-        }
+      startGame() {
+          #a6e3a1">"color:#cba6f7">if (this.levels.length > 0) {
+              this.currentLevel = 0;
+              this.playLevel(this.levels[this.currentLevel]);
+          } #a6e3a1">"color:#cba6f7">else {
+              console.error("No levels loaded.");
+          }
+      }
 
-        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, scene: { preload, create } };
-        const game = new Phaser.Game(config);
+      playLevel(level) {
+          // Implement level-specific logic
+          console.log(Playing level ${level.levelNumber}: ${level.title});
+      }
 
-        function preload() {}
-        function create() {}
+      checkAnswer(answer) {
+          // Check "color:#cba6f7">if the answer "color:#cba6f7">is correct
+          #a6e3a1">"color:#cba6f7">return "color:#cba6f7">true; // Placeholder
+      }
 
-        function startGame() {
-            playBackgroundMusic();
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('hud').classList.remove('hidden');
-            
-            // Set Difficulty Scaling: Level badhne par timer kam hoga
-            timeLeft = 30 - (level * 3); 
-            document.getElementById('target-count').innerText = 3 + level;
-            document.getElementById('current-lvl').innerText = level;
-            
-            startLevel();
-        }
+      nextLevel() {
+          #a6e3a1">"color:#cba6f7">if (this.currentLevel < this.levels.length - 1) {
+              this.currentLevel++;
+              this.playLevel(this.levels[this.currentLevel]);
+          } #a6e3a1">"color:#cba6f7">else {
+              this.gameOver();
+          }
+      }
 
-        function startLevel() {
-            console.log("Level " + level + " started. Difficulty level: " + timeLeft + "s");
-        }
+      gameOver() {
+          this.isGameOver = #a6e3a1">"color:#cba6f7">true;
+          console.log("Game Over!");
+      }
+  }
 
-        function endGame(won) {
-            if(won) level++;
-            alert(won ? "Mission Accomplished!" : "Time Out!");
-            location.reload();
-        }
-    </script>
+  // Sample levels data
+  #a6e3a1">"color:#cba6f7">const levels = [
+      {
+          levelNumber: 1,
+          title: "Tap Hidden Objects",
+          illustration: "path/to/level1.png",
+          question: "Tap all hidden objects.",
+          interactiveObjects: ["object1", "object2"],
+          hint: "Look closely at the background.",
+          solution: "All hidden objects have been tapped.",
+          reward: { coins: 100, xp: 200 },
+          winAnimation: "path/to/win_animation.gif"
+      },
+      {
+          levelNumber: 2,
+          title: "Drag Objects",
+          illustration: "path/to/level2.png",
+          question: "Drag the objects to the correct positions.",
+          interactiveObjects: ["objectA", "objectB"],
+          hint: "Observe the arrows.",
+          solution: "Objects are correctly placed.",
+          reward: { diamonds: 50, iqPoints: 100 },
+          winAnimation: "path/to/win_animation.gif"
+      },
+      // Add more levels here...
+  ];
+
+  document.addEventListener(&#039;DOMContentLoaded&#039;, () => {
+      #a6e3a1">"color:#cba6f7">const game = "color:#cba6f7">new Game();
+      game.loadLevels(levels);
+
+      #a6e3a1">"color:#cba6f7">const startButton = document.getElementById(&#039;start-button&#039;);
+      startButton.addEventListener(&#039;click&#039;, () => {
+          game.startGame();
+      });
+
+      #a6e3a1">"color:#cba6f7">const nextLevelButton = document.getElementById(&#039;next-level-button&#039;);
+      nextLevelButton.addEventListener(&#039;click&#039;, () => {
+          game.nextLevel();
+      });
+
+      #a6e3a1">"color:#cba6f7">const checkAnswerButton = document.getElementById(&#039;check-answer-button&#039;);
+      checkAnswerButton.addEventListener(&#039;click&#039;, () => {
+          #a6e3a1">"color:#cba6f7">const answer = document.getElementById(&#039;answer-input&#039;).value;
+          #a6e3a1">"color:#cba6f7">if (game.checkAnswer(answer)) {
+              alert(&#039;Correct!&#039;);
+          } #a6e3a1">"color:#cba6f7">else {
+              alert(&#039;Incorrect.&#039;);
+          }
+      });
+
+      // Render game state
+      #a6e3a1">"color:#cba6f7">function renderGameState() {
+          #a6e3a1">"color:#cba6f7">const gameStateDiv = document.getElementById(&#039;game-state&#039;);
+          gameStateDiv.innerHTML = 
+              <p>Current Level: ${game.currentLevel + 1}</p>
+              <p>Score: ${game.playerScore}</p>
+          ;
+      }
+
+      game.on(&#039;update&#039;, renderGameState);
+  });
+</script>
 </body>
 </html>
