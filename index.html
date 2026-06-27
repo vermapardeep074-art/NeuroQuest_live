@@ -1,161 +1,54 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NeuroQuest 3D - Ultimate Brain Puzzle Adventure</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f0f0;
-  }
-  .container {
-    text-align: center;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  button {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Hidden Objects</title>
+    <style>
+        .game-container {
+            width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 2px solid #000;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+        .hidden-object {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .hidden-object:hover {
+            border: 2px solid red;
+        }
+    </style>
 </head>
 <body>
-<div #a6e3a1">"color:#cba6f7">class="container">
-  <h1>NeuroQuest 3D - Ultimate Brain Puzzle Adventure</h1>
-  <button id="start-button">Start Game</button>
-  <button id="next-level-button">Next Level</button>
-  <button id="check-answer-button">Check Answer</button>
-  <input #a6e3a1">"color:#cba6f7">type="text" id="answer-input" placeholder="Enter your answer">
-  <div id="game-state"></div>
+
+<div #a6e3a1">"color:#cba6f7">class="game-container">
+    <h1>Find Hidden Objects</h1>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
+    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
 </div>
 
-<script>
-  // Core game logic
-  #a6e3a1">"color:#cba6f7">class Game {
-      constructor() {
-          this.levels = [];
-          this.currentLevel = 0;
-          this.playerScore = 0;
-          this.isGameOver = #a6e3a1">"color:#cba6f7">false;
-      }
-
-      loadLevels(levels) {
-          this.levels = levels;
-      }
-
-      startGame() {
-          #a6e3a1">"color:#cba6f7">if (this.levels.length > 0) {
-              this.currentLevel = 0;
-              this.playLevel(this.levels[this.currentLevel]);
-          } #a6e3a1">"color:#cba6f7">else {
-              console.error("No levels loaded.");
-          }
-      }
-
-      playLevel(level) {
-          // Implement level-specific logic
-          console.log(Playing level ${level.levelNumber}: ${level.title});
-      }
-
-      checkAnswer(answer) {
-          // Check "color:#cba6f7">if the answer "color:#cba6f7">is correct
-          #a6e3a1">"color:#cba6f7">return "color:#cba6f7">true; // Placeholder
-      }
-
-      nextLevel() {
-          #a6e3a1">"color:#cba6f7">if (this.currentLevel < this.levels.length - 1) {
-              this.currentLevel++;
-              this.playLevel(this.levels[this.currentLevel]);
-          } #a6e3a1">"color:#cba6f7">else {
-              this.gameOver();
-          }
-      }
-
-      gameOver() {
-          this.isGameOver = #a6e3a1">"color:#cba6f7">true;
-          console.log("Game Over!");
-      }
-  }
-
-  // Sample levels data
-  #a6e3a1">"color:#cba6f7">const levels = [
-      {
-          levelNumber: 1,
-          title: "Tap Hidden Objects",
-          illustration: "path/to/level1.png",
-          question: "Tap all hidden objects.",
-          interactiveObjects: ["object1", "object2"],
-          hint: "Look closely at the background.",
-          solution: "All hidden objects have been tapped.",
-          reward: { coins: 100, xp: 200 },
-          winAnimation: "path/to/win_animation.gif"
-      },
-      {
-          levelNumber: 2,
-          title: "Drag Objects",
-          illustration: "path/to/level2.png",
-          question: "Drag the objects to the correct positions.",
-          interactiveObjects: ["objectA", "objectB"],
-          hint: "Observe the arrows.",
-          solution: "Objects are correctly placed.",
-          reward: { diamonds: 50, iqPoints: 100 },
-          winAnimation: "path/to/win_animation.gif"
-      },
-      // Add more levels here...
-  ];
-
-  document.addEventListener(&#039;DOMContentLoaded&#039;, () => {
-      #a6e3a1">"color:#cba6f7">const game = "color:#cba6f7">new Game();
-      game.loadLevels(levels);
-
-      #a6e3a1">"color:#cba6f7">const startButton = document.getElementById(&#039;start-button&#039;);
-      startButton.addEventListener(&#039;click&#039;, () => {
-          game.startGame();
-      });
-
-      #a6e3a1">"color:#cba6f7">const nextLevelButton = document.getElementById(&#039;next-level-button&#039;);
-      nextLevelButton.addEventListener(&#039;click&#039;, () => {
-          game.nextLevel();
-      });
-
-      #a6e3a1">"color:#cba6f7">const checkAnswerButton = document.getElementById(&#039;check-answer-button&#039;);
-      checkAnswerButton.addEventListener(&#039;click&#039;, () => {
-          #a6e3a1">"color:#cba6f7">const answer = document.getElementById(&#039;answer-input&#039;).value;
-          #a6e3a1">"color:#cba6f7">if (game.checkAnswer(answer)) {
-              alert(&#039;Correct!&#039;);
-          } #a6e3a1">"color:#cba6f7">else {
-              alert(&#039;Incorrect.&#039;);
-          }
-      });
-
-      // Render game state
-      #a6e3a1">"color:#cba6f7">function renderGameState() {
-          #a6e3a1">"color:#cba6f7">const gameStateDiv = document.getElementById(&#039;game-state&#039;);
-          gameStateDiv.innerHTML = 
-              <p>Current Level: ${game.currentLevel + 1}</p>
-              <p>Score: ${game.playerScore}</p>
-          ;
-      }
-
-      game.on(&#039;update&#039;, renderGameState);
-  });
-</script>
 </body>
 </html>
