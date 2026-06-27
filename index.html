@@ -261,7 +261,36 @@
 
         // Initialize Home
         showSection('home');
-    </script>
+    
+    // --- LEVEL ENGINE ---
+const LEVEL_LIBRARY = {
+    1: { title: "Basic Logic", animation: "animate-bounce", diff: "Easy" },
+    2: { title: "Color Match", animation: "animate-pulse", diff: "Easy" },
+    3: { title: "Speed Reaction", animation: "animate-spin", diff: "Medium" },
+    // Aise hi aap 1000 tak entry kar sakte hain
+};
+
+function renderLevel(lvlId) {
+    // Agar level database mein nahi hai, toh automatic hard level generate karein
+    const data = LEVEL_LIBRARY[lvlId] || { title: "Challenge #" + lvlId, animation: "animate-bounce", diff: "Hard" };
+    
+    const container = document.getElementById('game-container');
+    container.innerHTML = `
+        <div class="flex flex-col items-center justify-center h-full p-6 transition-all">
+            <h2 class="text-4xl font-black mb-4 text-white">${data.title}</h2>
+            <div class="w-32 h-32 bg-indigo-500 rounded-3xl ${data.animation} shadow-2xl flex items-center justify-center text-4xl cursor-pointer" onclick="checkAnswer()">
+                ?
+            </div>
+            <p class="mt-8 text-slate-400 font-bold uppercase tracking-widest">${data.diff} LEVEL</p>
+        </div>
+    `;
+}
+
+// Level load karne ke liye
+function loadNextLevel() {
+    let currentLvl = parseInt(localStorage.getItem('userLevel')) || 1;
+    renderLevel(currentLvl);
+}
      const levels = [
         { question: "2 + 2 kitna hota hai?", answer: "4" },
         { question: "India ki capital kya hai?", answer: "Delhi" },
