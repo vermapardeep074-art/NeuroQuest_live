@@ -1,54 +1,266 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Hidden Objects</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeuroQuest 3D | Professional Brain Training</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        .game-container {
-            width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            border: 2px solid #000;
-            background-color: #f0f0f0;
-            text-align: center;
-        }
-        .hidden-object {
-            display: inline-block;
-            width: 100px;
-            height: 100px;
-            margin: 10px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            cursor: pointer;
-        }
-        .hidden-object:hover {
-            border: 2px solid red;
-        }
+        :root { --bg: #0a0f1d; --panel: rgba(20, 27, 45, 0.8); --accent: #4f46e5; }
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: white; overflow-x: hidden; margin: 0; }
+        .glass { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1.5rem; }
+        .neon-border { box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin: auto; height: 300px; max-height: 350px; }
+        canvas { touch-action: none; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div #a6e3a1">"color:#cba6f7">class="game-container">
-    <h1>Find Hidden Objects</h1>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-    <div #a6e3a1">"color:#cba6f7">class="hidden-object"></div>
-</div>
+    <!-- Main App Container -->
+    <div id="app" class="min-h-screen flex flex-col md:flex-row">
+        
+        <!-- Sidebar Navigation -->
+        <nav class="w-full md:w-20 bg-slate-900 flex md:flex-col items-center justify-around py-4 md:py-8 border-b md:border-r border-white/10 z-50">
+            <div class="text-indigo-500 font-black text-2xl">NQ</div>
+            <button onclick="showSection('home')" class="p-3 hover:bg-white/10 rounded-xl transition">🏠</button>
+            <button onclick="showSection('training')" class="p-3 hover:bg-white/10 rounded-xl transition">🎮</button>
+            <button onclick="showSection('stats')" class="p-3 hover:bg-white/10 rounded-xl transition">📊</button>
+            <button onclick="showSection('settings')" class="p-3 hover:bg-white/10 rounded-xl transition">⚙️</button>
+        </nav>
 
+        <!-- Dynamic Content Area -->
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+            
+            <!-- SECTION: HOME / DASHBOARD -->
+            <section id="home-section" class="space-y-6">
+                <header class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-3xl font-extrabold tracking-tight">Cerebral Dashboard</h1>
+                        <p class="text-slate-400">Welcome back, Neural Candidate 074</p>
+                    </div>
+                    <div class="glass px-4 py-2 flex items-center gap-3">
+                        <span class="text-yellow-400">💎</span> <span id="coin-count" class="font-bold">250</span>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass p-6 space-y-4">
+                        <h2 class="text-xl font-semibold">Core Performance</h2>
+                        <p class="text-sm text-slate-400">Your cognitive strengths across 5 core neural metrics.</p>
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass p-6 flex flex-col justify-between">
+                        <h2 class="text-xl font-semibold">Current Status</h2>
+                        <div class="text-center py-6">
+                            <div class="text-5xl font-black text-indigo-500" id="iq-stat">112</div>
+                            <div class="text-sm uppercase tracking-widest text-slate-400">Brain IQ</div>
+                        </div>
+                        <button onclick="showSection('training')" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold transition neon-border">RESUME MISSION</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: TRAINING (GAME) -->
+            <section id="training-section" class="hidden h-full flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Neural Training Room</h2>
+                    <div class="flex gap-2">
+                        <span id="game-timer" class="glass px-4 py-1 text-rose-400 font-mono">00:00</span>
+                        <span id="game-level" class="glass px-4 py-1 text-cyan-400">LVL 1</span>
+                    </div>
+                </div>
+                <div id="game-container" class="flex-1 glass overflow-hidden relative">
+                    <!-- Phaser Game Injected Here -->
+                </div>
+            </section>
+
+            <!-- SECTION: STATS & ANALYTICS -->
+            <section id="stats-section" class="hidden space-y-6">
+                <h2 class="text-2xl font-bold">In-Depth Analysis</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass p-4 text-center">
+                        <div class="text-slate-400 text-xs">Total XP</div>
+                        <div class="text-2xl font-bold">14,200</div>
+                    </div>
+                    <div class="glass p-4 text-center">
+                        <div class="text-slate-400 text-xs">Accuracy</div>
+                        <div class="text-2xl font-bold text-green-400">92%</div>
+                    </div>
+                    <div class="glass p-4 text-center">
+                        <div class="text-slate-400 text-xs">Daily Streak</div>
+                        <div class="text-2xl font-bold text-orange-400">12 Days</div>
+                    </div>
+                    <div class="glass p-4 text-center">
+                        <div class="text-slate-400 text-xs">Global Rank</div>
+                        <div class="text-2xl font-bold text-indigo-400">#4,102</div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- APP STATE ---
+        let gameState = {
+            coins: 250,
+            iq: 112,
+            level: 1,
+            xp: 500,
+            musicVolume: 0.5,
+            isMusicPlaying: false
+        };
+
+        // --- NAVIGATION ---
+        function showSection(id) {
+            const sections = ['home', 'training', 'stats', 'settings'];
+            sections.forEach(s => {
+                const el = document.getElementById(s + '-section');
+                if(el) el.classList.add('hidden');
+            });
+            const active = document.getElementById(id + '-section');
+            if(active) active.classList.remove('hidden');
+
+            if(id === 'training' && !gameInstance) initGame();
+        }
+
+        // --- CHARTING (BRAIN STATS) ---
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const brainChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Logic', 'Memory', 'Focus', 'Speed', 'Visual'],
+                datasets: [{
+                    label: 'Neural Profile',
+                    data: [80, 65, 90, 75, 85],
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderColor: '#4f46e5',
+                    pointBackgroundColor: '#4f46e5'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    r: { grid: { color: 'rgba(255,255,255,0.1)' }, angleLines: { color: 'rgba(255,255,255,0.1)' }, ticks: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // --- PHASER GAME CORE ---
+        let gameInstance = null;
+        let audioCtx = null;
+
+        function playAmbientSound() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(110, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            setTimeout(() => osc.stop(), 5000);
+        }
+
+        function initGame() {
+            const config = {
+                type: Phaser.AUTO,
+                parent: 'game-container',
+                width: 800,
+                height: 600,
+                physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
+                scene: { preload, create, update }
+            };
+            gameInstance = new Phaser.Game(config);
+            playAmbientSound();
+        }
+
+        function preload() {
+            // Generate professional placeholder assets using Graphics
+            const graphics = this.make.graphics({x: 0, y: 0, add: false});
+            
+            // Player
+            graphics.fillStyle(0x4f46e5, 1);
+            graphics.fillCircle(16, 16, 16);
+            graphics.generateTexture('player', 32, 32);
+            graphics.clear();
+            
+            // Enemy (Hard level obstacles)
+            graphics.fillStyle(0xf43f5e, 1);
+            graphics.fillTriangle(0, 32, 16, 0, 32, 32);
+            graphics.generateTexture('spike', 32, 32);
+            graphics.clear();
+
+            // Goal
+            graphics.fillStyle(0x10b981, 1);
+            graphics.fillRect(0,0,32,32);
+            graphics.generateTexture('goal', 32, 32);
+        }
+
+        function create() {
+            this.player = this.physics.add.sprite(100, 300, 'player');
+            this.player.setCollideWorldBounds(true);
+            
+            this.spikes = this.physics.add.group();
+            this.goal = this.physics.add.sprite(700, 300, 'goal');
+            
+            this.cursors = this.input.keyboard.createCursorKeys();
+            
+            // Difficulty Scaling Logic
+            const difficulty = gameState.level;
+            for(let i=0; i < difficulty * 3; i++) {
+                let x = Phaser.Math.Between(200, 600);
+                let y = Phaser.Math.Between(50, 550);
+                let spike = this.spikes.create(x, y, 'spike');
+                spike.setImmovable(true);
+                // Hard mode: Spikes move!
+                if(difficulty > 3) {
+                    this.tweens.add({
+                        targets: spike, y: y + 100, duration: 1500, yoyo: true, repeat: -1
+                    });
+                }
+            }
+
+            this.physics.add.collider(this.player, this.spikes, () => {
+                this.scene.restart();
+                alert("Neural Shock! Retrying...");
+            });
+
+            this.physics.add.overlap(this.player, this.goal, () => {
+                gameState.level++;
+                gameState.iq += 2;
+                document.getElementById('iq-stat').innerText = gameState.iq;
+                document.getElementById('game-level').innerText = `LVL ${gameState.level}`;
+                this.scene.restart();
+            });
+
+            // Mobile Support (On-Screen Controls)
+            this.input.on('pointerdown', (pointer) => {
+                this.physics.moveToObject(this.player, pointer, 200);
+            });
+        }
+
+        function update() {
+            this.player.setVelocity(0);
+            if (this.cursors.left.isDown) this.player.setVelocityX(-200);
+            else if (this.cursors.right.isDown) this.player.setVelocityX(200);
+            if (this.cursors.up.isDown) this.player.setVelocityY(-200);
+            else if (this.cursors.down.isDown) this.player.setVelocityY(200);
+        }
+
+        // Initialize Home
+        showSection('home');
+    </script>
 </body>
 </html>
