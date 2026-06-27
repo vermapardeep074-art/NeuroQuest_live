@@ -1,106 +1,85 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NeuroQuest 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroQuest: Pro Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; overflow: hidden; }
-        .glass-ui { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-        canvas { touch-action: none; }
+        body { font-family: 'Outfit', sans-serif; background: #0a0f1d; overflow: hidden; }
+        .glass-panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
 <body>
 
-    <div id="game-ui" class="absolute inset-0 z-10 flex flex-col pointer-events-none">
-        <header class="p-4 flex justify-between items-center opacity-0 transition-opacity" id="hud">
-            <div class="glass-ui px-4 py-2 rounded-full text-white font-bold pointer-events-auto">🪙 <span id="coin-val">0</span></div>
-            <div class="glass-ui px-4 py-2 rounded-full text-white font-bold pointer-events-auto">⭐ <span id="lvl-val">1</span></div>
-        </header>
+    <div id="ui-layer" class="absolute inset-0 z-50 pointer-events-none flex items-center justify-center">
+        <!-- Start Screen -->
+        <div id="start-screen" class="glass-panel p-8 rounded-3xl text-center pointer-events-auto">
+            <h1 class="text-5xl font-extrabold text-white mb-2">NeuroQuest</h1>
+            <p class="text-indigo-300 mb-8" id="level-display">Level 1: Focus Test</p>
+            <button onclick="startGame()" class="bg-indigo-600 text-white font-bold py-3 px-10 rounded-full transition hover:scale-105">START MISSION</button>
+        </div>
+
+        <!-- HUD (Heads-Up Display) -->
+        <div id="hud" class="hidden absolute top-0 w-full p-6 flex justify-between items-start pointer-events-none">
+            <div class="glass-panel px-6 py-3 rounded-2xl text-white pointer-events-auto">
+                <div class="text-xs uppercase text-indigo-400 font-bold">Level <span id="current-lvl">1</span></div>
+                <div class="text-2xl font-bold"><span id="found-count">0</span> / <span id="target-count">4</span></div>
+            </div>
+            <div class="glass-panel px-6 py-3 rounded-2xl text-white pointer-events-auto">
+                <div class="text-xs uppercase text-indigo-400 font-bold">Timer</div>
+                <div id="timer" class="text-2xl font-bold">30s</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const GameData = {
-            coins: parseInt(localStorage.getItem('nq_coins')) || 0,
-            level: parseInt(localStorage.getItem('nq_level')) || 1,
-            save: function() {
-                localStorage.setItem('nq_coins', this.coins);
-                localStorage.setItem('nq_level', this.level);
-            }
-        };
+        let level = 1;
+        let score = 0;
+        let timeLeft = 30;
+        let audioCtx;
+        
+        // Professional Audio Engine - Generates ambient sounds
+        function playBackgroundMusic() {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine'; osc.frequency.value = 220;
+            gain.gain.value = 0.05;
+            osc.start();
+        }
 
-        const config = {
-            type: Phaser.AUTO,
-            width: window.innerWidth,
-            height: window.innerHeight,
-            physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
-            scene: [MenuScene, PlayScene]
-        };
-
+        const config = { type: Phaser.AUTO, parent: 'game-container', width: window.innerWidth, height: window.innerHeight, scene: { preload, create } };
         const game = new Phaser.Game(config);
 
-        function MenuScene() { Phaser.Scene.call(this, { key: 'MenuScene' }); }
-        MenuScene.prototype = Object.create(Phaser.Scene.prototype);
-        MenuScene.prototype.create = function() {
-            this.add.text(this.cameras.main.centerX, 200, 'NEUROQUEST', { 
-                fontFamily: 'Fredoka One', fontSize: 64, fill: '#fff' 
-            }).setOrigin(0.5);
+        function preload() {}
+        function create() {}
 
-            const playBtn = this.add.rectangle(this.cameras.main.centerX, 450, 200, 60, 0x6366f1).setInteractive();
-            playBtn.setStrokeStyle(4, 0xffffff);
-            this.add.text(this.cameras.main.centerX, 450, 'PLAY NOW', { 
-                fontFamily: 'Inter', fontSize: 24, fill: '#fff' 
-            }).setOrigin(0.5);
-
-            playBtn.on('pointerdown', () => this.scene.start('PlayScene'));
-            document.getElementById('hud').style.opacity = 1;
-        };
-
-        function PlayScene() { Phaser.Scene.call(this, { key: 'PlayScene' }); }
-        PlayScene.prototype = Object.create(Phaser.Scene.prototype);
-        PlayScene.prototype.create = function() {
-            // Player
-            this.player = this.physics.add.sprite(100, 100, 'player');
-            this.player.body.setCircle(20);
-            this.player.setCollideWorldBounds(true);
+        function startGame() {
+            playBackgroundMusic();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
             
-            // Graphics: Using primitives for professional placeholders
-            const gfx = this.make.graphics();
-            gfx.fillStyle(0x6366f1); gfx.fillCircle(20, 20, 20);
-            gfx.generateTexture('player', 40, 40);
-            gfx.clear();
-            gfx.fillStyle(0xf59e0b); gfx.fillCircle(15, 15, 15);
-            gfx.generateTexture('star', 30, 30);
+            // Set Difficulty Scaling: Level badhne par timer kam hoga
+            timeLeft = 30 - (level * 3); 
+            document.getElementById('target-count').innerText = 3 + level;
+            document.getElementById('current-lvl').innerText = level;
             
-            this.player.setTexture('player');
+            startLevel();
+        }
 
-            // Items to Collect
-            this.stars = this.physics.add.group({ key: 'star', repeat: 5, setXY: { x: 200, y: 200, stepX: 100 } });
-            
-            this.physics.add.overlap(this.player, this.stars, (p, s) => {
-                s.destroy();
-                GameData.coins += 10;
-                GameData.save();
-                document.getElementById('coin-val').innerText = GameData.coins;
-                
-                // Particle Effect
-                const particles = this.add.particles('star');
-                particles.createEmitter({ speed: 100, scale: { start: 0.5, end: 0 }, lifeSpan: 500 }).explode(10, s.x, s.y);
-            });
+        function startLevel() {
+            console.log("Level " + level + " started. Difficulty level: " + timeLeft + "s");
+        }
 
-            this.input.on('pointermove', (ptr) => {
-                if(ptr.isDown) this.physics.moveToObject(this.player, ptr, 300);
-                else this.player.body.setVelocity(0);
-            });
-        };
-
-        window.addEventListener('resize', () => {
-            game.scale.resize(window.innerWidth, window.innerHeight);
-        });
+        function endGame(won) {
+            if(won) level++;
+            alert(won ? "Mission Accomplished!" : "Time Out!");
+            location.reload();
+        }
     </script>
 </body>
 </html>
