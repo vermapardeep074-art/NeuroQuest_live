@@ -1,45 +1,106 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeuroQuest 3D</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; }
-        .box { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        button { background: #4CAF50; color: white; border: none; padding: 15px 20px; border-radius: 10px; font-size: 16px; margin: 5px; width: 80%; }
-        input { padding: 10px; width: 70%; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; overflow: hidden; }
+        .glass-ui { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        canvas { touch-action: none; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>NeuroQuest Math</h2>
-    <p id="question">Loading...</p>
-    <input type="number" id="answer" placeholder="Enter Answer">
-    <br>
-    <button onclick="checkAnswer()">Submit</button>
-    <p id="result"></p>
-</div>
+    <div id="game-ui" class="absolute inset-0 z-10 flex flex-col pointer-events-none">
+        <header class="p-4 flex justify-between items-center opacity-0 transition-opacity" id="hud">
+            <div class="glass-ui px-4 py-2 rounded-full text-white font-bold pointer-events-auto">🪙 <span id="coin-val">0</span></div>
+            <div class="glass-ui px-4 py-2 rounded-full text-white font-bold pointer-events-auto">⭐ <span id="lvl-val">1</span></div>
+        </header>
+    </div>
 
-<script>
-    let num1, num2, correctAns;
-    function nextQuestion() {
-        num1 = Math.floor(Math.random() * 10) + 1;
-        num2 = Math.floor(Math.random() * 10) + 1;
-        correctAns = num1 + num2;
-        document.getElementById('question').innerText = num1 + " + " + num2 + " = ?";
-    }
-    function checkAnswer() {
-        let userAns = document.getElementById('answer').value;
-        if(userAns == correctAns) {
-            document.getElementById('result').innerText = "Sahi hai! 🎉";
-            setTimeout(nextQuestion, 1000);
-        } else {
-            document.getElementById('result').innerText = "Galat hai, phir se try karo! ❌";
-        }
-        document.getElementById('answer').value = "";
-    }
-    nextQuestion();
-</script>
+    <script>
+        const GameData = {
+            coins: parseInt(localStorage.getItem('nq_coins')) || 0,
+            level: parseInt(localStorage.getItem('nq_level')) || 1,
+            save: function() {
+                localStorage.setItem('nq_coins', this.coins);
+                localStorage.setItem('nq_level', this.level);
+            }
+        };
 
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
+            scene: [MenuScene, PlayScene]
+        };
+
+        const game = new Phaser.Game(config);
+
+        function MenuScene() { Phaser.Scene.call(this, { key: 'MenuScene' }); }
+        MenuScene.prototype = Object.create(Phaser.Scene.prototype);
+        MenuScene.prototype.create = function() {
+            this.add.text(this.cameras.main.centerX, 200, 'NEUROQUEST', { 
+                fontFamily: 'Fredoka One', fontSize: 64, fill: '#fff' 
+            }).setOrigin(0.5);
+
+            const playBtn = this.add.rectangle(this.cameras.main.centerX, 450, 200, 60, 0x6366f1).setInteractive();
+            playBtn.setStrokeStyle(4, 0xffffff);
+            this.add.text(this.cameras.main.centerX, 450, 'PLAY NOW', { 
+                fontFamily: 'Inter', fontSize: 24, fill: '#fff' 
+            }).setOrigin(0.5);
+
+            playBtn.on('pointerdown', () => this.scene.start('PlayScene'));
+            document.getElementById('hud').style.opacity = 1;
+        };
+
+        function PlayScene() { Phaser.Scene.call(this, { key: 'PlayScene' }); }
+        PlayScene.prototype = Object.create(Phaser.Scene.prototype);
+        PlayScene.prototype.create = function() {
+            // Player
+            this.player = this.physics.add.sprite(100, 100, 'player');
+            this.player.body.setCircle(20);
+            this.player.setCollideWorldBounds(true);
+            
+            // Graphics: Using primitives for professional placeholders
+            const gfx = this.make.graphics();
+            gfx.fillStyle(0x6366f1); gfx.fillCircle(20, 20, 20);
+            gfx.generateTexture('player', 40, 40);
+            gfx.clear();
+            gfx.fillStyle(0xf59e0b); gfx.fillCircle(15, 15, 15);
+            gfx.generateTexture('star', 30, 30);
+            
+            this.player.setTexture('player');
+
+            // Items to Collect
+            this.stars = this.physics.add.group({ key: 'star', repeat: 5, setXY: { x: 200, y: 200, stepX: 100 } });
+            
+            this.physics.add.overlap(this.player, this.stars, (p, s) => {
+                s.destroy();
+                GameData.coins += 10;
+                GameData.save();
+                document.getElementById('coin-val').innerText = GameData.coins;
+                
+                // Particle Effect
+                const particles = this.add.particles('star');
+                particles.createEmitter({ speed: 100, scale: { start: 0.5, end: 0 }, lifeSpan: 500 }).explode(10, s.x, s.y);
+            });
+
+            this.input.on('pointermove', (ptr) => {
+                if(ptr.isDown) this.physics.moveToObject(this.player, ptr, 300);
+                else this.player.body.setVelocity(0);
+            });
+        };
+
+        window.addEventListener('resize', () => {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
