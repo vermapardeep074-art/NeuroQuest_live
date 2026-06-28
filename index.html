@@ -79,20 +79,15 @@ button:hover {
 </section>
 <section id="level-selection" class="hidden min-h-screen bg-purple-200 p-6 text-center">
     <h2 class="text-3xl font-bold mb-6">Select Level</h2>
-    <div id="level-grid" class="grid grid-cols-4 gap-3 max-h-[80vh] overflow-y-auto"></div>
+    <div id="level-grid" class="grid grid-cols-4 gap-3"></div>
 </section>
 
 <section id="game-area" class="hidden min-h-screen bg-white p-6">
-    <button onclick="document.getElementById('game-area').classList.add('hidden'); document.getElementById('level-selection').classList.remove('hidden');" class="bg-gray-200 p-4 rounded">⬅ Back</button>
+    <button onclick="document.getElementById('game-area').classList.add('hidden'); document.getElementById('level-selection').classList.remove('hidden');" 
+    class="bg-gray-800 text-white p-4 rounded-xl">⬅ Back</button>
     <h2 id="puzzle-title" class="text-2xl font-bold mt-4">Level</h2>
-    <div id="puzzle-container" class="mt-10 p-6 border-4 border-dashed border-purple-400">
-        Puzzle content here...
-    </div>
+    <div id="puzzle-container" class="mt-10 p-6 border-4 border-dashed"></div>
 </section>
-            <section id="stats-section" class="hidden space-y-6">
-                <h2 class="text-2xl font-bold">In-Depth Analysis</h2>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="glass p-4 text-center">
                         <div class="text-slate-400 text-xs">Total XP</div>
                         <div class="text-2xl font-bold">14,200</div>
                     </div>
