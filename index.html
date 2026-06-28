@@ -180,29 +180,6 @@ button:hover {
     
     // --- LEVEL ENGINE ---
 const LEVEL_LIBRARY = {
-    1: { title: "Basic Logic", animation: "animate-bounce", diff: "Easy" },
-    2: { title: "Color Match", animation: "animate-pulse", diff: "Easy" },
-    3: { title: "Speed Reaction", animation: "animate-spin", diff: "Medium" }
-};
-function renderLevel(lvlId) {
-    // Agar level database mein nahi hai, toh automatic hard level generate karein
-    const data = LEVEL_LIBRARY[lvlId] || { title: "Challenge #" + lvlId, animation: "animate-bounce", diff: "Hard" };
-    
-    const container = document.getElementById('game-container');
-    container.innerHTML = `
-        <div class="flex flex-col items-center justify-center h-full p-6 transition-all">
-            <h2 class="text-4xl font-black mb-4 text-white">${data.title}</h2>
-            <div class="w-32 h-32 bg-indigo-500 rounded-3xl ${data.animation} shadow-2xl flex items-center justify-center text-4xl cursor-pointer" onclick="checkAnswer()">
-                ?
-            </div>
-            <p class="mt-8 text-slate-400 font-bold uppercase tracking-widest">${data.diff} LEVEL</p>
-        </div>
-    `;
-}
-
-// Level load karne ke liye
-function loadNextLevel() {
-    let currentLvl = parseInt(localStorage.getItem('userLevel')) || 1;
     renderLevel(currentLvl);
 }
      // 1000 levels ka automatic data
@@ -228,29 +205,38 @@ const levels = Array.from({ length: 1000 }, (_, i) => ({
     }
 
     function checkAnswer() {
-        const userAnswer = document.getElementById("answer-input").value;
-        if (userAnswer.trim().toLowerCase() === levels[currentLevel].answer.toLowerCase()) {
-            alert("Sahi jawab!");
-            nextLevel();
-        } else {
-            alert("Galat jawab, phir se try karein!");
-        }
-    }
-// Level Generator (Aapke existing code ke sath)
+       // Line 206 ke baad ye paste karo
+const levels = Array.from({ length: 1000 }, (_, i) => ({
+    question: `Puzzle Number ${i + 1}: Yahan sawal aayega`,
+    answer: "solution"
+}));
+
 function generateLevelGrid() {
     const grid = document.getElementById('level-grid');
     if (!grid) return;
     grid.innerHTML = "";
-    // Aapke levels array ka use karke buttons banayein
     levels.forEach((lvl, index) => {
         let btn = document.createElement('button');
-        btn.innerText = "Level " + (index + 1);
-        btn.className = "p-4 bg-white rounded-lg shadow-lg font-bold text-purple-600";
+        btn.innerText = index + 1;
+        btn.className = "p-6 bg-white rounded-xl shadow-lg font-bold text-purple-600 border-2";
         btn.onclick = () => renderLevel(index);
         grid.appendChild(btn);
     });
 }
 
+function renderLevel(index) {
+    document.getElementById('level-selection').classList.add('hidden');
+    document.getElementById('game-area').classList.remove('hidden');
+    document.getElementById('puzzle-title').innerText = "Level " + (index + 1);
+    document.getElementById('puzzle-container').innerHTML = `
+        <p class="text-xl mb-4">${levels[index].question}</p>
+        <input type="text" id="answer-input" class="w-full p-4 border rounded-xl mb-4 text-black" placeholder="Jawab likhein...">
+        <button onclick="checkAnswer()" class="w-full bg-purple-600 text-white p-4 rounded-xl font-bold">Submit</button>
+    `;
+}
+
+// Execution (Line 254 ke paas)
+window.onload = generateLevelGrid; 
 // Puzzle Loader
 function renderLevel(index) {
     document.getElementById('level-selection').classList.add('hidden');
