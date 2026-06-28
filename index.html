@@ -177,87 +177,6 @@ button:hover {
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            setTimeout(() => osc.stop(), 5000);
-        }
-
-        function initGame() {
-            const config = {
-                type: Phaser.AUTO,
-                parent: 'game-container',
-                width: 360,
-                height: 600,
-                physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
-                scene: { preload, create, update }
-            };
-            gameInstance = new Phaser.Game(config);
-            playAmbientSound();
-        }
-
-        function preload() {
-            // Generate professional placeholder assets using Graphics
-            const graphics = this.make.graphics({x: 0, y: 0, add: false});
-            
-            // Player
-            graphics.fillStyle(0x4f46e5, 1);
-            graphics.fillCircle(16, 16, 16);
-            graphics.generateTexture('player', 32, 32);
-            graphics.clear();
-            
-            // Enemy (Hard level obstacles)
-            graphics.fillStyle(0xf43f5e, 1);
-            graphics.fillTriangle(0, 32, 16, 0, 32, 32);
-            graphics.generateTexture('spike', 32, 32);
-            graphics.clear();
-
-            // Goal
-            graphics.fillStyle(0x10b981, 1);
-            graphics.fillRect(0,0,32,32);
-            graphics.generateTexture('goal', 32, 32);
-        }
-function create() {
-    this.player = this.physics.add.sprite(180, 500, 'player');
-    this.player.setCollideWorldBounds(true);
-    this.goal = this.physics.add.sprite(180, 50, 'goal');
-    this.spikes = this.physics.add.group();
-
-    const levelMode = gameState.level % 4; 
-
-    if (levelMode === 0) {
-        for(let i=1; i<5; i++) {
-            let s = this.spikes.create(i % 2 === 0 ? 100 : 260, i * 100, 'spike');
-            s.setImmovable(true);
-        }
-    } else if (levelMode === 1) {
-        let s = this.spikes.create(180, 300, 'spike');
-        this.tweens.add({ targets: s, angle: 360, duration: 2000, repeat: -1 });
-    } else if (levelMode === 2) {
-        let left = this.spikes.create(50, 300, 'spike'); left.setScale(1, 10);
-        let right = this.spikes.create(310, 300, 'spike'); right.setScale(1, 10);
-    } else {
-        for(let i=0; i<6; i++) {
-            let s = this.spikes.create(Phaser.Math.Between(50, 310), 0, 'spike');
-            this.tweens.add({ targets: s, y: 600, duration: 2000, repeat: -1 });
-        }
-    }
-
-    this.physics.add.collider(this.player, this.spikes, () => this.scene.restart());
-    this.physics.add.overlap(this.player, this.goal, () => {
-        gameState.level++;
-        this.scene.restart();
-    });
-}
-        
-
-        function update() {
-            this.player.setVelocity(0);
-            if (this.cursors.left.isDown) this.player.setVelocityX(-200);
-            else if (this.cursors.right.isDown) this.player.setVelocityX(200);
-            if (this.cursors.up.isDown) this.player.setVelocityY(-200);
-            else if (this.cursors.down.isDown) this.player.setVelocityY(200);
-        }
-
-        // Initialize Home
-        showSection('home');
     
     // --- LEVEL ENGINE ---
 const LEVEL_LIBRARY = {
@@ -317,6 +236,33 @@ function loadNextLevel() {
             alert("Galat jawab, phir se try karein!");
         }
     }
+// Level Generator (Aapke existing code ke sath)
+function generateLevelGrid() {
+    const grid = document.getElementById('level-grid');
+    if (!grid) return;
+    grid.innerHTML = "";
+    // Aapke levels array ka use karke buttons banayein
+    levels.forEach((lvl, index) => {
+        let btn = document.createElement('button');
+        btn.innerText = "Level " + (index + 1);
+        btn.className = "p-4 bg-white rounded-lg shadow-lg font-bold text-purple-600";
+        btn.onclick = () => renderLevel(index);
+        grid.appendChild(btn);
+    });
+}
+
+// Puzzle Loader
+function renderLevel(index) {
+    document.getElementById('level-selection').classList.add('hidden');
+    document.getElementById('game-area').classList.remove('hidden');
+    document.getElementById('puzzle-title').innerText = "Level " + (index + 1);
+    document.getElementById('puzzle-container').innerHTML = levels[index].question;
+}
+
+// SABSE ZARURI: Page load hote hi grid start karein
+window.onload = function() {
+    generateLevelGrid();
+};        
 </script> 
 </body>
 </html>
