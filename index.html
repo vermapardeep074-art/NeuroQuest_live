@@ -205,11 +205,11 @@ function loadNextLevel() {
     let currentLvl = parseInt(localStorage.getItem('userLevel')) || 1;
     renderLevel(currentLvl);
 }
-     const levels = [
-        { question: "2 + 2 kitna hota hai?", answer: "4" },
-        { question: "India ki capital kya hai?", answer: "Delhi" },
-        { question: "Rangin dhanush mein kitne rang hote hain?", answer: "7" }
-    ];
+     // 1000 levels ka automatic data
+const levels = Array.from({ length: 1000 }, (_, i) => ({
+    question: `Puzzle Number ${i + 1}: Yahan aapka sawal aayega...`,
+    answer: "solution" // Har level ka answer yahan change karein
+}));
 
     let currentLevel = 0;
 
