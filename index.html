@@ -167,39 +167,13 @@ button:hover {
             gain.connect(audioCtx.destination);
             osc.start();
     
-    // --- LEVEL ENGINE ---
-const LEVEL_LIBRARY = {
-    renderLevel(currentLvl);
-}
-     // 1000 levels ka automatic data
+    // 1. Data Store
 const levels = Array.from({ length: 1000 }, (_, i) => ({
-    question: `Puzzle Number ${i + 1}: Yahan aapka sawal aayega...`,
-    answer: "solution" // Har level ka answer yahan change karein
-}));
-
-    let currentLevel = 0;
-
-    function startGame() {
-        currentLevel = 0;
-        alert("Game Shuru! Sawal: " + levels[currentLevel].question);
-    }
-
-    function nextLevel() {
-        if (currentLevel < levels.length - 1) {
-            currentLevel++;
-            alert("Level " + (currentLevel + 1) + ": " + levels[currentLevel].question);
-        } else {
-            alert("Badhai ho! Saare levels poore ho gaye.");
-        }
-    }
-
-    function checkAnswer() {
-       // Line 206 ke baad ye paste karo
-const levels = Array.from({ length: 1000 }, (_, i) => ({
-    question: `Puzzle Number ${i + 1}: Yahan sawal aayega`,
+    question: `Puzzle Number ${i + 1}`,
     answer: "solution"
 }));
 
+// 2. Grid Generator
 function generateLevelGrid() {
     const grid = document.getElementById('level-grid');
     if (!grid) return;
@@ -207,23 +181,29 @@ function generateLevelGrid() {
     levels.forEach((lvl, index) => {
         let btn = document.createElement('button');
         btn.innerText = index + 1;
-        btn.className = "p-6 bg-white rounded-xl shadow-lg font-bold text-purple-600 border-2";
+        btn.className = "p-4 bg-white rounded-lg shadow font-bold text-purple-600 border-2";
         btn.onclick = () => renderLevel(index);
         grid.appendChild(btn);
     });
 }
 
+// 3. Level Loader (Mobile Optimized)
 function renderLevel(index) {
     document.getElementById('level-selection').classList.add('hidden');
     document.getElementById('game-area').classList.remove('hidden');
     document.getElementById('puzzle-title').innerText = "Level " + (index + 1);
     document.getElementById('puzzle-container').innerHTML = `
-        <p class="text-xl mb-4">${levels[index].question}</p>
-        <input type="text" id="answer-input" class="w-full p-4 border rounded-xl mb-4 text-black" placeholder="Jawab likhein...">
-        <button onclick="checkAnswer()" class="w-full bg-purple-600 text-white p-4 rounded-xl font-bold">Submit</button>
+        <p class="text-lg mb-4">${levels[index].question}</p>
+        <input type="text" id="answer-input" class="w-full p-3 border rounded-lg mb-4 text-black" placeholder="Jawab likhein">
+        <button onclick="checkAnswer()" class="w-full bg-purple-600 text-white p-3 rounded-lg font-bold">Submit</button>
     `;
 }
 
+// 4. Answer Checker
+function checkAnswer() {
+    const userAns = document.getElementById('answer-input').value;
+    alert("Checking: " + userAns);
+}
 // Execution (Line 254 ke paas)
 window.onload = generateLevelGrid; 
 // Puzzle Loader
@@ -237,7 +217,11 @@ function renderLevel(index) {
 // SABSE ZARURI: Page load hote hi grid start karein
 window.onload = function() {
     generateLevelGrid();
-};        
+};
+            // Page load par grid load karne ke liye
+window.onload = function() {
+    generateLevelGrid();
+};
 </script> 
 </body>
 </html>
