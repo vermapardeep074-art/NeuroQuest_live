@@ -209,47 +209,46 @@
         }
 
         function create() {
-            this.player = this.physics.add.sprite(100, 300, 'player');
-            this.player.setCollideWorldBounds(true);
-            
-            this.spikes = this.physics.add.group();
-            this.goal = this.physics.add.sprite(700, 300, 'goal');
-            
-            this.cursors = this.input.keyboard.createCursorKeys();
-            
-            // Difficulty Scaling Logic
-            const difficulty = gameState.level;
-            for(let i=0; i < difficulty * 3; i++) {
-                let x = Phaser.Math.Between(200, 600);
-                let y = Phaser.Math.Between(50, 550);
-                let spike = this.spikes.create(x, y, 'spike');
-                spike.setImmovable(true);
-                // Hard mode: Spikes move!
-                if(difficulty > 3) {
-                    this.tweens.add({
-                        targets: spike, y: y + 100, duration: 1500, yoyo: true, repeat: -1
-                    });
-                }
-            }
+    // 1. Splash ko 2 second baad hatayein
+    setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 1000); }
+    }, 2000);
 
-            this.physics.add.collider(this.player, this.spikes, () => {
-                this.scene.restart();
-                alert("Neural Shock! Retrying...");
-            });
+    this.player = this.physics.add.sprite(100, 300, 'player');
+    this.player.setCollideWorldBounds(true);
+    this.goal = this.physics.add.sprite(700, 300, 'goal');
+    this.spikes = this.physics.add.group();
+    
+    // Level Based Logic
+    const levelType = gameState.level % 3; 
 
-            this.physics.add.overlap(this.player, this.goal, () => {
-                gameState.level++;
-                gameState.iq += 2;
-                document.getElementById('iq-stat').innerText = gameState.iq;
-                document.getElementById('game-level').innerText = `LVL ${gameState.level}`;
-                this.scene.restart();
-            });
-
-            // Mobile Support (On-Screen Controls)
-            this.input.on('pointerdown', (pointer) => {
-                this.physics.moveToObject(this.player, pointer, 200);
-            });
+    if (levelType === 0) {
+        // MODE: Dodging - Spikes scatter hote hain
+        for(let i=0; i < gameState.level * 2; i++) {
+            let s = this.spikes.create(Phaser.Math.Between(200, 600), Phaser.Math.Between(50, 550), 'spike');
+            s.setImmovable(true);
         }
+    } else if (levelType === 1) {
+        // MODE: Moving Hazards
+        for(let i=0; i < 4; i++) {
+            let s = this.spikes.create(300 + (i * 100), 300, 'spike');
+            this.tweens.add({ targets: s, y: 500, duration: 1000, yoyo: true, repeat: -1 });
+        }
+    } else {
+        // MODE: The Wall
+        let wall = this.physics.add.sprite(400, 300, 'spike');
+        wall.setScale(2, 5); wall.setImmovable(true);
+    }
+
+    // Collisions
+    this.physics.add.collider(this.player, this.spikes, () => this.scene.restart());
+    this.physics.add.overlap(this.player, this.goal, () => {
+        gameState.level++;
+        gameState.iq += 5;
+        this.scene.restart();
+    });
+}
 
         function update() {
             this.player.setVelocity(0);
