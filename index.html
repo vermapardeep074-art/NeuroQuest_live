@@ -77,22 +77,18 @@ button:hover {
         </button>
     </div>
 </section>
+<section id="level-selection" class="hidden min-h-screen bg-purple-200 p-6 text-center">
+    <h2 class="text-3xl font-bold mb-6">Select Level</h2>
+    <div id="level-grid" class="grid grid-cols-4 gap-3 max-h-[80vh] overflow-y-auto"></div>
+</section>
 
-            <!-- SECTION: TRAINING (GAME) -->
-            <section id="training-section" class="hidden h-full flex flex-col gap-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-2xl font-bold">Neural Training Room</h2>
-                    <div class="flex gap-2">
-                        <span id="game-timer" class="glass px-4 py-1 text-rose-400 font-mono">00:00</span>
-                        <span id="game-level" class="glass px-4 py-1 text-cyan-400">LVL 1</span>
-                    </div>
-                </div>
-                <div id="game-container" class="flex-1 glass overflow-hidden relative">
-                    <!-- Phaser Game Injected Here -->
-                </div>
-            </section>
-
-            <!-- SECTION: STATS & ANALYTICS -->
+<section id="game-area" class="hidden min-h-screen bg-white p-6">
+    <button onclick="document.getElementById('game-area').classList.add('hidden'); document.getElementById('level-selection').classList.remove('hidden');" class="bg-gray-200 p-4 rounded">⬅ Back</button>
+    <h2 id="puzzle-title" class="text-2xl font-bold mt-4">Level</h2>
+    <div id="puzzle-container" class="mt-10 p-6 border-4 border-dashed border-purple-400">
+        Puzzle content here...
+    </div>
+</section>
             <section id="stats-section" class="hidden space-y-6">
                 <h2 class="text-2xl font-bold">In-Depth Analysis</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
