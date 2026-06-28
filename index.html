@@ -9,6 +9,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        body { 
+    font-family: 'Outfit', sans-serif; 
+    background-color: #d8b4fe; 
+    color: #1e293b; 
+}
         /* Professional Card Styling */
 .glass {
     background: rgba(255, 255, 255, 0.03);
@@ -49,35 +54,29 @@ button:hover {
         <main class="flex-1 p-4 md:p-8 overflow-y-auto">
             
             <!-- SECTION: HOME / DASHBOARD -->
-            <section id="home-section" class="space-y-6">
-                <header class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-3xl font-extrabold tracking-tight">Cerebral Dashboard</h1>
-                        <p class="text-slate-400">Welcome back, Neural Candidate 074</p>
-                    </div>
-                    <div class="glass px-4 py-2 flex items-center gap-3">
-                        <span class="text-yellow-400">💎</span> <span id="coin-count" class="font-bold">250</span>
-                    </div>
-                </header>
+            <section id="home-section" class="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+    
+    <h1 class="text-4xl font-bold text-slate-900 mb-2">DESIGNED BY</h1>
+    <h1 class="text-4xl font-bold text-slate-900 mb-8">EXPERTS</h1>
+    
+    <div class="mb-10 text-slate-800">
+        <p class="text-sm font-semibold">DEVELOPED BY PROF AT</p>
+        <h2 class="text-2xl font-bold">CAMBRIDGE UNIVERSITY</h2>
+    </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                        <h2 class="text-xl font-semibold">Core Performance</h2>
-                        <p class="text-sm text-slate-400">Your cognitive strengths across 5 core neural metrics.</p>
-                        <div class="chart-container">
-                            <canvas id="performanceChart"></canvas>
-                        </div>
-                    </div>
-                    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 25px; margin-top: 20px;">
-                        <h2 class="text-xl font-semibold">Current Status</h2>
-                        <div class="text-center py-6">
-                            <div class="text-5xl font-black text-indigo-500" id="iq-stat">112</div>
-                            <div class="text-sm uppercase tracking-widest text-slate-400">Brain IQ</div>
-                        </div>
-                        <button onclick="showSection('training')" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold transition neon-border">RESUME MISSION</button>
-                    </div>
-                </div>
-            </section>
+    <div class="w-full max-w-sm space-y-4">
+        <button class="w-full bg-white p-4 rounded-3xl shadow-lg flex items-center justify-start gap-4">
+            <button onclick="showSection('training')" class="w-full bg-white p-4 rounded-3xl shadow-lg flex items-center justify-start gap-4">
+    <span>🧩</span> <span class="font-bold text-xl">Brain Games</span>
+</button>
+        <button class="w-full bg-white p-4 rounded-3xl shadow-lg flex items-center justify-start gap-4">
+            <span>🧩</span> <span class="font-bold text-xl">Brain Games</span>
+        </button>
+        <button class="w-full bg-white p-4 rounded-3xl shadow-lg flex items-center justify-start gap-4">
+            <span>📓</span> <span class="font-bold text-xl">Personalised Plans</span>
+        </button>
+    </div>
+</section>
 
             <!-- SECTION: TRAINING (GAME) -->
             <section id="training-section" class="hidden h-full flex flex-col gap-4">
