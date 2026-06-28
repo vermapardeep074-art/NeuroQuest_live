@@ -9,14 +9,26 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0f1d; --panel: rgba(20, 27, 45, 0.8); --accent: #4f46e5; }
-        body { font-family: 'Outfit', sans-serif; background-color: var(--bg); color: white; overflow-x: hidden; margin: 0; }
-        .glass { background: var(--panel); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1.5rem; }
-        .neon-border { box-shadow: 0 0 15px rgba(79, 70, 229, 0.4); }
-        .chart-container { position: relative; width: 100%; max-width: 500px; margin: auto; height: 300px; max-height: 350px; }
-        canvas { touch-action: none; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        /* Professional Card Styling */
+.glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Button Styling */
+button {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border-radius: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+}
     </style>
 </head>
 <body>
