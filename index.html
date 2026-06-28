@@ -177,7 +177,7 @@
             const config = {
                 type: Phaser.AUTO,
                 parent: 'game-container',
-                width: 800,
+                width: 360,
                 height: 600,
                 physics: { default: 'arcade', arcade: { gravity: { y: 0 }, debug: false } },
                 scene: { preload, create, update }
@@ -207,48 +207,39 @@
             graphics.fillRect(0,0,32,32);
             graphics.generateTexture('goal', 32, 32);
         }
-
-        function create() {
-    // 1. Splash ko 2 second baad hatayein
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 1000); }
-    }, 2000);
-
-    this.player = this.physics.add.sprite(100, 300, 'player');
+function create() {
+    this.player = this.physics.add.sprite(180, 500, 'player');
     this.player.setCollideWorldBounds(true);
-    this.goal = this.physics.add.sprite(700, 300, 'goal');
+    this.goal = this.physics.add.sprite(180, 50, 'goal');
     this.spikes = this.physics.add.group();
-    
-    // Level Based Logic
-    const levelType = gameState.level % 3; 
 
-    if (levelType === 0) {
-        // MODE: Dodging - Spikes scatter hote hain
-        for(let i=0; i < gameState.level * 2; i++) {
-            let s = this.spikes.create(Phaser.Math.Between(200, 600), Phaser.Math.Between(50, 550), 'spike');
+    const levelMode = gameState.level % 4; 
+
+    if (levelMode === 0) {
+        for(let i=1; i<5; i++) {
+            let s = this.spikes.create(i % 2 === 0 ? 100 : 260, i * 100, 'spike');
             s.setImmovable(true);
         }
-    } else if (levelType === 1) {
-        // MODE: Moving Hazards
-        for(let i=0; i < 4; i++) {
-            let s = this.spikes.create(300 + (i * 100), 300, 'spike');
-            this.tweens.add({ targets: s, y: 500, duration: 1000, yoyo: true, repeat: -1 });
-        }
+    } else if (levelMode === 1) {
+        let s = this.spikes.create(180, 300, 'spike');
+        this.tweens.add({ targets: s, angle: 360, duration: 2000, repeat: -1 });
+    } else if (levelMode === 2) {
+        let left = this.spikes.create(50, 300, 'spike'); left.setScale(1, 10);
+        let right = this.spikes.create(310, 300, 'spike'); right.setScale(1, 10);
     } else {
-        // MODE: The Wall
-        let wall = this.physics.add.sprite(400, 300, 'spike');
-        wall.setScale(2, 5); wall.setImmovable(true);
+        for(let i=0; i<6; i++) {
+            let s = this.spikes.create(Phaser.Math.Between(50, 310), 0, 'spike');
+            this.tweens.add({ targets: s, y: 600, duration: 2000, repeat: -1 });
+        }
     }
 
-    // Collisions
     this.physics.add.collider(this.player, this.spikes, () => this.scene.restart());
     this.physics.add.overlap(this.player, this.goal, () => {
         gameState.level++;
-        gameState.iq += 5;
         this.scene.restart();
     });
 }
+        
 
         function update() {
             this.player.setVelocity(0);
