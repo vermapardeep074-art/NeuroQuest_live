@@ -15,7 +15,6 @@
     </div>
 
     <script>
-        3: { instr: "Find the key!", render: (area) => { area.innerHTML = "🔑"; }},
         // 1. DATABASE (Saare levels yahan hain)
         const LEVEL_DATABASE = {
             1: { instr: "Find the biggest apple!", render: (area) => {
@@ -24,6 +23,7 @@
             2: { instr: "2 + 2 = ?", render: (area) => {
                 area.innerHTML = `<input type="number" id="ans" class="text-black p-2"><button onclick="Game.check('ans', '4')" class="bg-blue-500 p-2 ml-2">CHECK</button>`;
             }},
+            3: { instr: "Find the key!", render: (area) => { area.innerHTML = "🔑"; }},
             // Yahan aap level 3, 4, 5... add karte jayenge
         };
 
