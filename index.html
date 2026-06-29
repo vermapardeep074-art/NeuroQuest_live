@@ -163,17 +163,58 @@
                 setTimeout(() => el.classList.remove('shake-anim'), 500);
             },
 
-            loadLevel: function(levelNum) {
-                this.state.currentLevel = levelNum;
-                this.showScreen('screen-game');
-                document.getElementById('current-lvl-txt').innerText = levelNum;
-                
-                const canvas = document.getElementById('puzzle-canvas');
-                const tools = document.getElementById('puzzle-tools');
-                
-                // CLEAR PREVIOUS LEVEL
-                canvas.innerHTML = "";
-                tools.innerHTML = "";
+            // --- Yahan 1000 Levels ka Engine start hota hai ---
+switch(levelNum) {
+    
+    // 1. Math Puzzle (Logic/IQ)
+    case 1:
+        document.getElementById('puzzle-instruction').innerText = "Solve: 25 + 15 = ?";
+        canvas.innerHTML = `<div class="text-6xl font-black text-slate-800">25 + 15 = ?</div>`;
+        tools.innerHTML = `<input id="ans" type="number" class="p-4 border-2 rounded-xl text-2xl w-24">
+                           <button onclick="if(document.getElementById('ans').value=='40') Game.winLevel('Correct!'); else Game.wrongAnswer()" class="bg-blue-500 text-white p-4 rounded-xl">CHECK</button>`;
+        break;
+
+    // 2. Physics Puzzle (Gravity/Interaction)
+    case 2:
+        document.getElementById('puzzle-instruction').innerText = "Drop the ball into the basket!";
+        canvas.innerHTML = `<div class="w-full h-full relative">
+            <div id="ball" class="w-12 h-12 bg-red-500 rounded-full absolute top-0 left-10 transition-all duration-1000" onclick="this.style.top='80%'"></div>
+            <div class="absolute bottom-10 left-5 w-20 h-5 bg-green-500" onclick="Game.winLevel('Goal!')"></div>
+        </div>`;
+        break;
+
+    // 3. Hidden Object (Detective Style)
+    case 3:
+        document.getElementById('puzzle-instruction').innerText = "Find the hidden Star!";
+        canvas.innerHTML = `<div class="text-[150px]">🌕</div> 
+                            <div onclick="Game.winLevel('Star Found!')" class="absolute top-20 right-10 text-4xl cursor-pointer">⭐</div>`;
+        break;
+
+    // 4. Memory Challenge (Pattern Match)
+    case 4:
+        document.getElementById('puzzle-instruction').innerText = "Tap the RED box first!";
+        canvas.innerHTML = `<div class="grid grid-cols-2 gap-4">
+            <div onclick="Game.wrongAnswer()" class="w-24 h-24 bg-blue-500"></div>
+            <div onclick="Game.winLevel('Memory Perfect!')" class="w-24 h-24 bg-red-500"></div>
+        </div>`;
+        break;
+
+    // 5. Tricky/Logic Puzzle (Brain Out Style)
+    case 5:
+        document.getElementById('puzzle-instruction').innerText = "Make the screen WHITE!";
+        canvas.innerHTML = `<div id="bg" class="w-full h-full bg-black cursor-pointer"></div>`;
+        document.getElementById('bg').onclick = function() { 
+            this.style.background = 'white'; 
+            Game.winLevel('Bright Idea!'); 
+        };
+        break;
+
+    // Default Case (Agar koi level setup nahi hai)
+    default:
+        document.getElementById('puzzle-instruction').innerText = "Coming Soon!";
+        canvas.innerHTML = `<button onclick="Game.nextLevel()" class="p-6 bg-purple-500 text-white rounded-xl">Next Level</button>`;
+        break;
+}
                 
                 // LOAD LEVEL LOGIC (Example Levels based on your GDD)
                 if(levelNum === 1) {
