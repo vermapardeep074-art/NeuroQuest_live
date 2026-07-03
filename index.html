@@ -1,50 +1,456 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroQuest Brain Games</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-900 text-white">
+package com.example.ui.screens
 
-    <div id="app" class="max-w-md mx-auto h-screen flex flex-col p-4">
-        <div id="level-display" class="text-yellow-400 font-bold">Level 1</div>
-        <div id="render-area" class="flex-1 flex items-center justify-center">
-            </div>
-    </div>
+import android.view.MotionEvent
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.audio.CyberSynth
+import com.example.data.PlayerProfile
+import com.example.game.*
+import com.example.ui.theme.CyberColors
+import com.example.viewmodel.GameViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.cos
+import kotlin.math.sin
 
-    <script>
-        // 1. DATABASE (Saare levels yahan hain)
-        const LEVEL_DATABASE = {
-            1: { instr: "Find the biggest apple!", render: (area) => {
-                area.innerHTML = `<div onclick="Game.win()" class="text-6xl cursor-pointer">🍎</div>`;
-            }},
-            2: { instr: "2 + 2 = ?", render: (area) => {
-                area.innerHTML = `<input type="number" id="ans" class="text-black p-2"><button onclick="Game.check('ans', '4')" class="bg-blue-500 p-2 ml-2">CHECK</button>`;
-            }},
-            3: { instr: "Find the key!", render: (area) => { area.innerHTML = "🔑"; }},
-            // Yahan aap level 3, 4, 5... add karte jayenge
-        };
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun GamePlayScreen(
+    viewModel: GameViewModel,
+    profile: PlayerProfile,
+    onMainMenu: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val hapticFeedback = LocalHapticFeedback.current
 
-        // 2. GAME ENGINE (Game chalane ki machine)
-        const Game = {
-            current: 1,
-            load: function(n) {
-                this.current = n;
-                const lvl = LEVEL_DATABASE[n] || { instr: "Coming soon!", render: (a) => a.innerHTML="Done!" };
-                document.getElementById('instruction').innerText = lvl.instr;
-                lvl.render(document.getElementById('render-area'));
-            },
-            win: function() { this.load(this.current + 1); },
-            check: function(id, ans) { 
-                if(document.getElementById(id).value == ans) this.win(); 
-                else alert("Wrong!"); 
+    // Game Running States
+    var gameActive by remember { mutableStateOf(true) }
+    var score by remember { mutableStateOf(0) }
+    var distance by remember { mutableStateOf(0) }
+    var shardsGained by remember { mutableStateOf(0) }
+    var coresGained by remember { mutableStateOf(0) }
+    
+    // Powerups & Upgrades
+    var hasShield by remember { mutableStateOf(profile.equippedGadget1 == "shield_generator" || profile.equippedGadget2 == "shield_generator") }
+    val hasMagnet = remember { profile.equippedGadget1 == "magnetic_pulse" || profile.equippedGadget2 == "magnetic_pulse" }
+    val hasQuantumLeap = remember { profile.equippedGadget1 == "quantum_leap" || profile.equippedGadget2 == "quantum_leap" }
+    
+    var showShieldAnimation by remember { mutableStateOf(false) }
+    var invincibilityFrames by remember { mutableStateOf(0) }
+
+    // Game Physics Parameters
+    var playerLane by remember { mutableStateOf(0f) } // -1f (Left), 0f (Middle), 1f (Right)
+    var targetLane by remember { mutableStateOf(0f) }
+    var playerState by remember { mutableStateOf(PlayerState.RUNNING) }
+    var jumpYOffset by remember { mutableStateOf(0f) }
+    var jumpVelocity by remember { mutableStateOf(0f) }
+    var slideTicks by remember { mutableStateOf(0) }
+    var wallRunTicks by remember { mutableStateOf(0) }
+    var canvasWidth by remember { mutableStateOf(1080f) }
+    var canvasHeight by remember { mutableStateOf(2160f) }
+    
+    // Hyper-Drive (Time Dilation) Gauge
+    var chronosGauge by remember { mutableStateOf(0f) } // 0f to 100f
+    var hyperDriveActive by remember { mutableStateOf(false) }
+    var hyperDriveTicks by remember { mutableStateOf(0) }
+
+    // Procedural entities list
+    val obstacles = remember { mutableStateListOf<Obstacle>() }
+    val shards = remember { mutableStateListOf<GameShard>() }
+    val artifactsOnBridge = remember { mutableStateListOf<Artifact>() }
+    val runArtifactsCollected = remember { mutableStateListOf<Artifact>() }
+    var lastArtifactSpawnDistance by remember { mutableStateOf(0) }
+    var activeArtifactReveal by remember { mutableStateOf<Artifact?>(null) }
+    val particles = remember { mutableStateListOf<Particle>() }
+    val decorations = remember { mutableStateListOf<GameDecoration>() }
+    val fireflies = remember { mutableStateListOf<Firefly>() }
+    val mistBands = remember { mutableStateListOf<MistBand>() }
+
+    // Spawn parameters
+    var lastObstacleSpawnTime by remember { mutableStateOf(0L) }
+    var lastShardSpawnTime by remember { mutableStateOf(0L) }
+    var lastDecoSpawnTime by remember { mutableStateOf(0L) }
+    var lastAmbientSoundDistance by remember { mutableStateOf(0) }
+    var zOffset by remember { mutableStateOf(0f) } // for ground line movement animation
+
+    // Camera and Drone Threat State
+    val cameraController = remember { CameraController() }
+    var droneProximity by remember { mutableStateOf(0.1f) }
+
+    // Revive and Game Over overlays
+    var showReviveDialog by remember { mutableStateOf(false) }
+    var revivesUsed by remember { mutableStateOf(0) }
+    var isWatchingAd by remember { mutableStateOf(false) }
+    var adCountdown by remember { mutableStateOf(3) }
+
+    // Pause Menu & Settings State
+    var isPaused by remember { mutableStateOf(false) }
+    var isMuted by remember { mutableStateOf(CyberSynth.isMuted()) }
+    var isVibrationEnabled by remember { mutableStateOf(true) }
+    var shakeMultiplier by remember { mutableStateOf(cameraController.shakeMultiplier) }
+
+    // Initialize Game Parameters (Quantum Leap)
+    LaunchedEffect(Unit) {
+        if (hasQuantumLeap) {
+            score += 500
+            distance += 500
+            chronosGauge = 50f
+            CyberSynth.playHyperDriveSound()
+        }
+    }
+
+    // Core 60FPS Physics Engine Loop
+    LaunchedEffect(gameActive, isPaused) {
+        if (!gameActive || isPaused) return@LaunchedEffect
+
+        var frameTime = System.currentTimeMillis()
+        while (gameActive && !isPaused) {
+            val now = System.currentTimeMillis()
+            val dt = (now - frameTime).coerceAtMost(30)
+            frameTime = now
+
+            // Time Dilation speed adjustment and gradual movement speed acceleration based on score
+            val speedFactor = if (hyperDriveActive) 0.35f else 1.0f
+            val baseSpeed = 3.5f + (score * 0.0022f)
+            val gameSpeed = baseSpeed.coerceAtMost(13.0f) * speedFactor
+
+            // Distance & Score progression
+            distance += 1
+            score = (distance * 1.1).toInt()
+
+            // Trigger Atmospheric Jungle Sound Effects (intensifying based on score)
+            val ambientInterval = (450 - (score / 15)).coerceAtLeast(160)
+            if (distance - lastAmbientSoundDistance >= ambientInterval) {
+                lastAmbientSoundDistance = distance
+                if (Math.random() < 0.7) {
+                    CyberSynth.playBirdChirp(score)
+                } else {
+                    CyberSynth.playTempleCrumble(score)
+                }
             }
-        };
 
-        // 3. START GAME
-        window.onload = () => Game.load(1);
-    </script>
-</body>
-</html>
+            // Handle temporary invincibility decay
+            if (invincibilityFrames > 0) {
+                invincibilityFrames--
+            }
+
+            // --- PLAYER CONTROLS & PHYSICS ---
+            // Lane interpolation (smooth transition between lanes)
+            if (playerLane != targetLane) {
+                val step = 0.18f * speedFactor
+                if (Math.abs(targetLane - playerLane) < step) {
+                    playerLane = targetLane
+                } else {
+                    playerLane += if (targetLane > playerLane) step else -step
+                }
+            }
+
+            // Jump Physics
+            if (playerState == PlayerState.JUMPING) {
+                jumpYOffset += jumpVelocity * speedFactor
+                jumpVelocity -= 1.8f * speedFactor // Gravity
+                if (jumpYOffset <= 0f) {
+                    jumpYOffset = 0f
+                    playerState = PlayerState.RUNNING
+                }
+            }
+
+            // Slide physics timing
+            if (playerState == PlayerState.SLIDING) {
+                slideTicks--
+                if (slideTicks <= 0) {
+                    playerState = PlayerState.RUNNING
+                }
+            }
+
+            // Wall run physics timing
+            if (playerState == PlayerState.WALL_RUNNING_LEFT || playerState == PlayerState.WALL_RUNNING_RIGHT) {
+                wallRunTicks--
+                if (wallRunTicks <= 0) {
+                    // return to highway
+                    targetLane = if (playerState == PlayerState.WALL_RUNNING_LEFT) -1f else 1f
+                    playerState = PlayerState.RUNNING
+                }
+            }
+
+            // Hyper-Drive timer
+            if (hyperDriveActive) {
+                hyperDriveTicks--
+                chronosGauge = (hyperDriveTicks / 300f) * 100f
+                if (hyperDriveTicks <= 0) {
+                    hyperDriveActive = false
+                    chronosGauge = 0f
+                }
+            } else {
+                // Slowly decay or regenerate chronos slightly
+                chronosGauge = (chronosGauge - 0.02f).coerceAtLeast(0f)
+            }
+
+            // Ground Dash animation offset
+            zOffset = (zOffset + gameSpeed) % 20f
+
+            // --- PARTICLES ENGINE ---
+            // Spawn sparks from jet-boots
+            if (Math.random() < 0.4) {
+                val px = playerLane
+                val py = -jumpYOffset
+                val pColor = when (profile.equippedSkin) {
+                    "synthwave" -> 0xFFBD00FF
+                    "quantum" -> 0xFF00FF9F
+                    "void_rogue" -> 0xFFFFE600
+                    else -> 0xFF00F0FF // Cyan classic
+                }
+                particles.add(
+                    Particle(
+                        x = px + ((Math.random() - 0.5f) * 0.2f).toFloat(),
+                        y = py + 0.9f,
+                        vx = ((Math.random() - 0.5f) * 0.05f).toFloat(),
+                        vy = (0.05f + Math.random() * 0.05f).toFloat(),
+                        alpha = 1f,
+                        color = pColor,
+                        size = (8f + Math.random() * 8f).toFloat()
+                    )
+                )
+            }
+
+            // Update existing particles
+            val particleIterator = particles.iterator()
+            while (particleIterator.hasNext()) {
+                val p = particleIterator.next()
+                p.x += p.vx
+                p.y += p.vy
+                p.alpha -= 0.04f
+                p.life++
+                if (p.alpha <= 0f || p.life > p.maxLife) {
+                    particleIterator.remove()
+                }
+            }
+
+            // Update Skybox entities (Fireflies & Mist)
+            SkyboxController.updateSkyboxEntities(
+                fireflies = fireflies,
+                mistBands = mistBands,
+                score = score,
+                width = canvasWidth,
+                height = canvasHeight
+            )
+
+            // --- PROCEDURAL SPAWNING MECHANICS ---
+            val currentTime = distance.toLong()
+            
+            // Spawn Shards (Common and rare Premium Cyber Cores)
+            if (currentTime - lastShardSpawnTime > 12) {
+                lastShardSpawnTime = currentTime
+                val laneIdx = (-1..1).random().toFloat()
+                val isRare = Math.random() < 0.06 // 6% chance for Cyber Cores
+                shards.add(
+                    GameShard(
+                        id = System.nanoTime(),
+                        lane = laneIdx,
+                        z = 100f,
+                        isPremium = isRare
+                    )
+                )
+            }
+
+            // Procedurally Spawn Ancient Relic Artifacts every 160 meters
+            if (distance - lastArtifactSpawnDistance > 160) {
+                val available = Artifact.ALL_RELICS.filter { relic ->
+                    runArtifactsCollected.none { it.id == relic.id } &&
+                    artifactsOnBridge.none { it.id == relic.id }
+                }
+                if (available.isNotEmpty()) {
+                    val selected = available.random().copy(
+                        lane = (-1..1).random().toFloat(),
+                        z = 100f
+                    )
+                    artifactsOnBridge.add(selected)
+                    CyberSynth.playSpatializedAncientChime(selected.lane)
+                    lastArtifactSpawnDistance = distance
+                }
+            }
+
+            // Spawn Obstacles & Glowing Billboards (frequency increases as score increases)
+            val dynamicSpawnInterval = (28 - (score / 350)).coerceAtLeast(11)
+            if (currentTime - lastObstacleSpawnTime > dynamicSpawnInterval) {
+                lastObstacleSpawnTime = currentTime
+                
+                val roll = Math.random()
+                if (roll < 0.15) {
+                    // Spawn side wall billboards (either left lane or right lane border)
+                    val leftSide = Math.random() < 0.5
+                    obstacles.add(
+                        Obstacle(
+                            id = System.nanoTime(),
+                            lane = if (leftSide) -1.8f else 1.8f,
+                            z = 100f,
+                            type = ObstacleType.WALL_BILLBOARD,
+                            colorHex = "#FFFFE600"
+                        )
+                    )
+                } else {
+                    // Spawn normal obstacle or procedural trap in a highway lane
+                    // Trap ratio increases as the player scores higher to elevate complexity!
+                    val trapChance = (0.45f + (score / 4500f)).coerceAtMost(0.85f)
+                    val rollTrap = Math.random() < trapChance
+                    val newObs = if (rollTrap) {
+                        TrapGenerator.generateTrap(distance)
+                    } else {
+                        val laneIdx = (-1..1).random().toFloat()
+                        val type = listOf(ObstacleType.HOVER_CAR, ObstacleType.LASER_GRID, ObstacleType.COLLAPSING_BRIDGE).random()
+                        val col = when (type) {
+                            ObstacleType.HOVER_CAR -> "#00F0FF"
+                            ObstacleType.LASER_GRID -> "#FF007F"
+                            ObstacleType.COLLAPSING_BRIDGE -> "#00FF9F"
+                            else -> "#FF007F"
+                        }
+                        Obstacle(
+                            id = System.nanoTime(),
+                            lane = laneIdx,
+                            z = 100f,
+                            type = type,
+                            colorHex = col
+                        )
+                    }
+                    obstacles.add(newObs)
+                }
+            }
+
+            // Spawn Procedural Jungle & Temple Decorations on sides of tracks
+            if (currentTime - lastDecoSpawnTime > 5) {
+                lastDecoSpawnTime = currentTime
+                
+                // Spawn on both sides with slight random variations for organic forest look
+                listOf(-1f, 1f).forEach { sideSign ->
+                    if (Math.random() < 0.8) { // 80% chance for lush vegetation/structures
+                        // Position far left or right of running tracks so they never block lanes
+                        val lateralDist = sideSign * (2.4f + (Math.random() * 1.8f).toFloat())
+                        val dType = DecoType.entries.random()
+                        val scaleV = (0.7f + Math.random() * 0.7f).toFloat()
+                        val rotV = (Math.random() * 360f).toFloat()
+                        
+                        decorations.add(
+                            GameDecoration(
+                                id = System.nanoTime(),
+                                lane = lateralDist,
+                                z = 100f,
+                                type = dType,
+                                scaleFactor = scaleV,
+                                rotation = rotV
+                            )
+                        )
+                    }
+                }
+            }
+
+            // --- UPDATE MOVING ENTITIES ---
+            // Move environment decorations down Z axis towards player
+            val decoIterator = decorations.iterator()
+            while (decoIterator.hasNext()) {
+                val deco = decoIterator.next()
+                deco.z -= gameSpeed
+                if (deco.z < -6f) {
+                    decoIterator.remove()
+                }
+            }
+
+            // Move obstacles down Z axis towards player
+            val obstacleIterator = obstacles.iterator()
+            while (obstacleIterator.hasNext()) {
+                val obs = obstacleIterator.next()
+                obs.z -= gameSpeed
+
+                // Check collision at player plane (z near 0)
+                if (obs.z <= 1.2f && obs.z >= -0.5f && !obs.passed) {
+                    obs.passed = true
+                    
+                    // Collision check
+                    val isSameLane = Math.abs(obs.lane - playerLane) < 0.7f
+                    val onSideLeft = obs.lane == -1.8f && targetLane == -1f
+                    val onSideRight = obs.lane == 1.8f && targetLane == 1f
+
+                    var crashDetected = false
+
+                    if (obs.type == ObstacleType.WALL_BILLBOARD) {
+                        // Safe to pass unless user crashes directly into it side-on
+                    } else if (isSameLane) {
+                        crashDetected = when (obs.type) {
+                            ObstacleType.HOVER_CAR -> playerState != PlayerState.JUMPING
+                            ObstacleType.LASER_GRID -> playerState != PlayerState.SLIDING
+                            ObstacleType.COLLAPSING_BRIDGE -> playerState != PlayerState.JUMPING
+                            ObstacleType.SWINGING_BLADE -> playerState != PlayerState.SLIDING
+                            ObstacleType.PRESSURE_SPIKES -> playerState != PlayerState.JUMPING
+                            else -> true
+                        }
+                    }
+
+                    if (crashDetected && invincibilityFrames <= 0) {
+                        if (hasShield) {
+                            // Consume shield generator gadget
+                            hasShield = false
+                            showShieldAnimation = true
+                            invincibilityFrames = 90 // 1.5 seconds of flashing protection
+                            CyberSynth.playCrashSound()
+                            coroutineScope.launch {
+                                delay(1200)
+                                showShieldAnimation = false
+                            }
+                        } else {
+                            // CRASHED! End game or show revive system
+                            playerState = PlayerState.CRASHED
+                            gameActive = false
+                            CyberSynth.playCrashSound()
+                            showReviveDialog = true
+                        }
+                    }
+                }
+
+                if (obs.z < -5f) {
+                    obstacleIterator.remove()
+                }
+            }
+
+            // Move and collect ancient artifact relics on the bridge
+            val artifactIterator = artifactsOnBridge.iterator()
+            while (artifactIterator.hasNext()) {
+                val artifact = artifactIterator.next()
+                artifact.z -= gameSpeed
+
+                // Artifact collection detection (z near 0)
+                if (artifact.z <= 2.2f && artifact.z >= -1.0f && !
